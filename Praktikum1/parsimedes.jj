@@ -1,0 +1,44 @@
+options{}
+PARSER_BEGIN(ExprsParse)
+    public class ExprsParse {
+        public static void main(String args []) {
+            ExprsParse parser = new ExprsParse(System.in);
+           try {
+                parser.start();            
+                System.out.println("Ausdruck ok");
+            } catch (ParseException e) {
+                System.err.println(e);
+            }
+        }
+    }
+PARSER_END(ExprsParse)
+
+SKIP :{" "}
+SKIP :{"\n"|"\r"|"\r\n"}
+TOKEN :{<NUMBER : (["0"-"9"])+>}
+void start():
+{}
+{
+    expr()<EOF>
+}
+void summe():
+{}
+{
+    produkt() (("+"|"-") produkt())*
+}
+void produkt():
+{}
+{
+    term() (("*"|"/") term())*    
+}
+void term():
+{}
+{
+    <NUMBER> |"(" expr() ")"
+}
+void expr():
+{}
+{
+    summe()
+}
+

@@ -30,13 +30,14 @@ String summe():
     String d = "";
 }
 {
-    a=produkt() ("+" b=produkt() {c = c.concat(b); d = d.concat("+ ");}
-    |"-" b=produkt() {c =c.concat(b); d = d.concat("- ");} )* 
+    a=produkt() ("+" b=produkt() {c += b; d += "+ ";}
+    |"-" b=produkt() {c += b; d += "- ";} )* 
    
     {if(b != null){
-        return a.concat(c).concat(d);
+        return a + c + d;
     }
-    return a;}
+    return a;
+}
 }
 String produkt():
 {
@@ -45,11 +46,11 @@ String produkt():
     String c = "";
 }
 {
-    a=term() ("*" b=term() {c =c.concat(b.concat("* "));}
-    |"/" b=term() {c =c.concat(b.concat("/ "));} )*    
+    a=term() ("*" b=term() {c += b + "* ";}
+    |"/" b=term() {c =c + b + "/ ";})*    
    
     {if(b != null){
-        return a.concat(c);
+        return a + c;
     }
     return a;}
 }

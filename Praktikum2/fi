@@ -1,0 +1,35 @@
+E-> E+ T
+E-> T
+T -> T*F
+T->F
+F->(E)
+F->id
+
+fi(E)= {(,id}
+fi(T)= {(,id}
+fi(F)= {(,id}
+
+fo(E)={epsilon, +,)}
+fo(F)={*,epsilon,+,)}
+fo(T)={*,epsilon,+,)}
+
+S->Sa
+S->a
+
+fi(S)={a}
+fo(S)={a}
+
+E-> TE'
+E'->+TE'
+E'->epsilon
+T->FT'
+T'->*FT'
+T'->epsilon
+F->(E)
+F->id
+
+fi(E)={(,id}
+fi(E')={epsilon, +}
+fi(T)={(,id}
+fi(T')={*,epsilon}
+fi(F)={(,id}

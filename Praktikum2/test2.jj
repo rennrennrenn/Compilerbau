@@ -1,0 +1,70 @@
+options{}
+PARSER_BEGIN(ExprsParse)
+    public class ExprsParse {
+        public static void main(String args []) {
+            ExprsParse parser = new ExprsParse(System.in);
+           try {
+                parser.start();            
+                System.out.println("Ausdruck ok");
+            } catch (Exception e) {                
+                System.out.println("Ausdruck nicht ok");
+                System.out.println(e);
+            }
+        }
+    }
+PARSER_END(ExprsParse)
+
+SKIP :{" "}
+SKIP :{"\n"|"\r"|"\r\n"}
+TOKEN :{<NUMBER : ["1"-"9"](["0"-"9"])* | "0">}
+void start():
+{String a;}
+{
+    a=expr()<EOF> {System.out.println(a);}
+}
+String summe():
+{ 
+    String a = null;
+    String b= null;
+    String c = "";
+    String d = "";
+}
+{
+    a=produkt() ("+" b=produkt() {c = c.concat(b); d = d.concat("+ ");}
+    |"-" b=produkt() {c =c.concat(b); d = d.concat("- ");} )* 
+   
+    {if(b != null){
+        return a.concat(c).concat(d);
+    }
+    return a;}
+}
+String produkt():
+{
+    String a =null;
+    String b =null;
+    String c = "";
+}
+{
+    a=term() ("*" b=term() {c =c.concat(b.concat("* "));}
+    |"/" b=term() {c =c.concat(b.concat("/ "));} )*    
+   
+    {if(b != null){
+        return a.concat(c);
+    }
+    return a;}
+}
+String term():
+{
+    Token t = null;
+    String a = null;
+}
+{
+    t = <NUMBER> {return t.image.toString() + " ";}
+    | "(" a=expr() ")" {return a;}    
+}
+String expr():
+{String a;}
+{
+    a=summe() {return a;}
+}
+

@@ -6,8 +6,8 @@ PARSER_BEGIN(ExprsParse)
            try {
                 parser.start();            
                 System.out.println("Ausdruck ok");
-            } catch (ParseException e) {
-                System.err.println(e);
+            } catch (Exception e) {
+                System.out.println("Ausdruck nicht ok");
             }
         }
     }
@@ -15,7 +15,7 @@ PARSER_END(ExprsParse)
 
 SKIP :{" "}
 SKIP :{"\n"|"\r"|"\r\n"}
-TOKEN :{<NUMBER : (["0"-"9"])+>}
+TOKEN :{<NUMBER : ["1"-"9"](["0"-"9"])* | "0">}
 void start():
 {}
 {

@@ -7,16 +7,23 @@
                 System.out.println("Ausdruck ok");
             } catch (Exception e) {
                 System.out.println("Ausdruck nicht ok");
+                System.out.println(e);
             }
         }
 
   static final public void start() throws ParseException {
-    expr();
+ String a;
+    a = expr();
     jj_consume_token(0);
+                   System.out.println(a);
   }
 
-  static final public void summe() throws ParseException {
-    produkt();
+  static final public String summe() throws ParseException {
+    String a = null;
+    String b= null;
+    String c = "";
+    String d = "";
+    a = produkt();
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -31,21 +38,32 @@
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 6:
         jj_consume_token(6);
+        b = produkt();
+                                  c = c.concat(b); d = d.concat("+ ");
         break;
       case 7:
         jj_consume_token(7);
+        b = produkt();
+                      c =c.concat(b); d = d.concat("- ");
         break;
       default:
         jj_la1[1] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      produkt();
     }
+     if(b != null){
+        {if (true) return a.concat(c).concat(d);}
+    }
+    {if (true) return a;}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void produkt() throws ParseException {
-    term();
+  static final public String produkt() throws ParseException {
+    String a =null;
+    String b =null;
+    String c = "";
+    a = term();
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -60,38 +78,54 @@
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 8:
         jj_consume_token(8);
+        b = term();
+                            c =c.concat(b.concat("* "));
         break;
       case 9:
         jj_consume_token(9);
+        b = term();
+                   c =c.concat(b.concat("/ "));
         break;
       default:
         jj_la1[3] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      term();
     }
+     if(b != null){
+        {if (true) return a.concat(c);}
+    }
+    {if (true) return a;}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void term() throws ParseException {
+  static final public String term() throws ParseException {
+    Token t = null;
+    String a = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NUMBER:
-      jj_consume_token(NUMBER);
+      t = jj_consume_token(NUMBER);
+                  {if (true) return t.image.toString() + " ";}
       break;
     case 10:
       jj_consume_token(10);
-      expr();
+      a = expr();
       jj_consume_token(11);
+                        {if (true) return a;}
       break;
     default:
       jj_la1[4] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void expr() throws ParseException {
-    summe();
+  static final public String expr() throws ParseException {
+ String a;
+    a = summe();
+               {if (true) return a;}
+    throw new Error("Missing return statement in function");
   }
 
   static private boolean jj_initialized_once = false;

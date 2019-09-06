@@ -1,0 +1,135 @@
+options{}
+PARSER_BEGIN(ExprsParse)
+
+    public class ExprsParse {        
+        public static void main(String args []) {
+            ExprsParse parser = new ExprsParse(System.in);
+           try {
+                parser.start();            
+                System.out.println("Ausdruck ok");
+            } catch (Exception e) {                
+                System.out.println("Ausdruck nicht ok");
+                System.out.println(e);
+            }
+        }
+    }
+PARSER_END(ExprsParse)
+
+SKIP :{" "}
+SKIP :{"\n"|"\r"|"\r\n"}
+TOKEN :{
+    <INT : "int"> 
+    |<IF : "if"> 
+    |<WHILE : "while">
+    |<FINAL : "final">
+    |<NUMBER : ["1"-"9"](["0"-"9"])* | "0">
+    | <IDENT : ["a"-"z"](["a"-"z"] | ["A"-"Z"])*>
+}
+void start():
+{}
+{        
+    programm()<EOF>
+}
+
+void programm():
+{}
+{
+    constDecl() varDecl() statement() 
+}
+
+void constDecl():
+{}
+{    
+    ( <FINAL> <INT> constZuw() constList() ";")?
+}
+
+void constZuw():
+{}
+{
+     <IDENT> "=" <NUMBER>              
+}
+void constList():
+{}
+{
+    ("," constZuw() constList())?
+}
+
+void varDecl():
+{}
+{
+    (<INT> <IDENT> varZuw() varList() ";")?
+}
+
+void varZuw():
+{}
+{
+    ("=" <NUMBER>)?
+}
+
+void varList():
+{}
+{
+    ("," <IDENT> varZuw() varList())?
+}
+
+void expression():
+{}
+{
+    term() sum() 
+}
+
+void sum():
+{}
+{
+    ("+" term() sum() |
+    "-" term() sum())?    
+}
+
+void term():
+{}
+{
+    faktor() product()
+}
+
+void product():
+{}
+{
+    ("*" faktor() product()
+    | "/" faktor() product() )?     
+}
+
+void faktor():
+{}
+{
+    <NUMBER> 
+    | <IDENT>
+    | "(" expression() ")" 
+}
+
+void condition():
+{}
+{
+    expression() ["=="|"!="|">"|"<"|">="|"<="] expression()
+}
+
+void statement():
+{}
+{
+    <IDENT> "=" expression() ";"
+    | "print(" expression() ");"
+    | "{" stmtList() "}"
+    | <IF> condition() statement() optElse()
+    | <WHILE> condition() statement()
+}
+
+void optElse():
+{}
+{
+    ("else" statement())?
+}
+
+void stmtList():
+{}
+{
+    (statement() stmtList())?
+}

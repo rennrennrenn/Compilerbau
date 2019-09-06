@@ -1,4 +1,4 @@
-package things;
+
 import java.util.HashMap;
 
 public class SymbolTable{

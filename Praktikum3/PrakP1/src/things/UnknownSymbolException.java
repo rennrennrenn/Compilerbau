@@ -1,4 +1,3 @@
-package things;
 
 public class UnknownSymbolException extends Exception{
     public UnknownSymbolException(String message) {

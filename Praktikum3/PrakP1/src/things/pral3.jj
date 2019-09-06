@@ -1,8 +1,8 @@
 options{}
 PARSER_BEGIN(ExprsParse)
-    package things;    
+
     public class ExprsParse {
-        private SymbolTable st = new SymbolTable();
+        private static SymbolTable st = new SymbolTable();
         public static void main(String args []) {
             ExprsParse parser = new ExprsParse(System.in);
            try {
@@ -22,7 +22,7 @@ TOKEN :{
     <NUMBER : ["1"-"9"](["0"-"9"])* | "0">
     | <IDENT : ["a"-"z"](["a"-"z"] | ["A"-"Z"])*>
 }
-void start():
+void start() throws SymbolAlreadyDefinedException, UnknownSymbolException:
 {}
 {    
     {
@@ -33,65 +33,78 @@ void start():
     programm()<EOF>
 }
 
-void programm()
-{String a = null;}
+void programm() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a = null;
+}
 {
     constDecl() a=expression() { System.out.println(a);}
 }
 
-void constDecl()
+void constDecl() throws SymbolAlreadyDefinedException:
 {}
-{
+{    
     ( "final int " constZuw() constList() ";")?
 }
 
-void constZuw()
+void constZuw() throws SymbolAlreadyDefinedException:
 {
     Token a;
     Token b;
 }
 {
-
      a=<IDENT> "=" b=<NUMBER> 
-     { st.addConstant(a.image.toString(), b.image.toString()) }
+     {st.addConstant(a.image.toString(), b.image.toString());} 
+        
 }
- 
-void constList()
+void constList() throws SymbolAlreadyDefinedException:
+
 {}
 {
     ("," constZuw() constList())?
 }
 
-void expression()
-{}
+String expression() throws UnknownSymbolException:
 {
-    term() sum() 
+    String a= null;
+    String b= null;
+}
+{
+    a=term() b=sum() {return a+b;}
 }
 
-void sum() 
-{}
+String sum() throws UnknownSymbolException:
 {
-    ("+" term() sum() |
-    "-" term() sum())?
+    String a= null;
+    String b= null;
+}
+{
+    ("+" a=term() b=sum() { return a+b +"+"; } |
+    "-" a=term() b=sum() { return a+ b +"-"; })?
+    {return "";}
 }
 
-void term()
-{}
+String term() throws UnknownSymbolException:
 {
-    faktor() product()
+    String a= null;
+    String b= null;
+}
+{
+    a=faktor() b=product() { return a+b;}
 }
 
-void product()
+String product() throws UnknownSymbolException:
 {
     String a = null;
     String b = null;
 }
 {
-    ("*" a=faktor() b=product() {return a +" " + b + " * "}
-    | "/" a=faktor() b=product() {return a +" " + b + " / "})? 
+    ("*" a=faktor() b=product() {return a + b + "*";}
+    | "/" a=faktor() b=product() {return a + b + "/";})? 
+    {return "";}
 }
 
-String faktor()
+String faktor() throws UnknownSymbolException:
 {
     Token a;
     Token b;

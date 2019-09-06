@@ -1,0 +1,1 @@
+S(while cond stmt, rho,sigma) = if e(cond,rho,sigma) == true then S(while cond stmt,rho,S(stmt,rho,sigma)) else sigma 

@@ -1,6 +1,5 @@
 options{}
 PARSER_BEGIN(ExprsParse)
-
     public class ExprsParse {
         private static SymbolTable st = new SymbolTable();
         public static void main(String args []) {

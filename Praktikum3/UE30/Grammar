@@ -1,0 +1,45 @@
+<Programm> -> <constDecl> <varDecl> <statement>
+
+<constDecl> -> epsilon
+<constDecl> -> final int <ConstZuw1> ;
+<ConstZuw1> -> ident = number <ConstZuw2>
+<ConstZuw2> -> epsilon
+<ConstZuw2> -> , ident = number <ConstZuw2>
+
+<varDecl> -> epsilon
+<varDecl> -> int <varZuw1> <varZuw2>;
+<varZuw1> -> ident <varPoss>
+<varPoss> -> epsilon
+<varPoss> -> = number
+<varZuw2> -> epsilon
+<varZuw2> -> , ident <varPoss> <varZuw2>
+
+<expression> -> <term> <sum>
+
+<term> -> <term'> <product> 
+
+<term'> -> number
+<term'> -> ident
+<term'> -> ( expression )
+
+<product> -> epsilon
+<product> -> * <term> 
+<product> -> / <term>
+
+<sum> -> epsilon
+<sum> -> + <expression>
+<sum> -> - <expression>
+
+<statement> -> ident = <expression> ;
+<statement> -> print ( <expression> ) ;
+<statement> -> {  <statement'> }
+<statement> -> if <condition> <statement> <else>
+<statement> -> while <condition> <statement>
+
+<statement'> -> epsilon
+<statement'> -> <statement> <statement'>
+
+<condition> -> <expression> compOp <expression>
+
+<else> -> epsilon
+<else> -> else <statement>

@@ -1,0 +1,10 @@
+fi(S)={epsilon,a}
+fi(A)={a,b}
+
+fo(S)={epsilon,a}
+fo(A)={epsilon, a }
+
+la(1)={epsilon,a}
+la(2)={a}
+la(3)={a }
+la(4)={b}

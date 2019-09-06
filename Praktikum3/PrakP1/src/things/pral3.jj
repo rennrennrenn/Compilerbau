@@ -1,0 +1,105 @@
+options{}
+PARSER_BEGIN(ExprsParse)
+    package things;    
+    public class ExprsParse {
+        private SymbolTable st = new SymbolTable();
+        public static void main(String args []) {
+            ExprsParse parser = new ExprsParse(System.in);
+           try {
+                parser.start();            
+                System.out.println("Ausdruck ok");
+            } catch (Exception e) {                
+                System.out.println("Ausdruck nicht ok");
+                System.out.println(e);
+            }
+        }
+    }
+PARSER_END(ExprsParse)
+
+SKIP :{" "}
+SKIP :{"\n"|"\r"|"\r\n"}
+TOKEN :{
+    <NUMBER : ["1"-"9"](["0"-"9"])* | "0">
+    | <IDENT : ["a"-"z"](["a"-"z"] | ["A"-"Z"])*>
+}
+void start():
+{}
+{    
+    {
+         st.addConstant("final", "");
+         st.addConstant("int", "");
+    }
+    
+    programm()<EOF>
+}
+
+void programm()
+{String a = null;}
+{
+    constDecl() a=expression() { System.out.println(a);}
+}
+
+void constDecl()
+{}
+{
+    ( "final int " constZuw() constList() ";")?
+}
+
+void constZuw()
+{
+    Token a;
+    Token b;
+}
+{
+
+     a=<IDENT> "=" b=<NUMBER> 
+     { st.addConstant(a.image.toString(), b.image.toString()) }
+}
+ 
+void constList()
+{}
+{
+    ("," constZuw() constList())?
+}
+
+void expression()
+{}
+{
+    term() sum() 
+}
+
+void sum() 
+{}
+{
+    ("+" term() sum() |
+    "-" term() sum())?
+}
+
+void term()
+{}
+{
+    faktor() product()
+}
+
+void product()
+{
+    String a = null;
+    String b = null;
+}
+{
+    ("*" a=faktor() b=product() {return a +" " + b + " * "}
+    | "/" a=faktor() b=product() {return a +" " + b + " / "})? 
+}
+
+String faktor()
+{
+    Token a;
+    Token b;
+    String s = null;
+}
+{
+    a=<NUMBER> {return a.image.toString();}
+    | b=<IDENT> {return st.getSymbol(b.image.toString());}
+    | "(" s=expression() ")" {return s;}
+}
+

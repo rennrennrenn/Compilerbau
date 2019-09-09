@@ -1,0 +1,206 @@
+options{}
+PARSER_BEGIN(ExprsParse)
+    public class ExprsParse {        
+        public static SymbolTable st = new SymbolTable();
+        public static Integer nextId = 1;
+        public static void main(String args []) {
+            ExprsParse parser = new ExprsParse(System.in);
+           try {
+                parser.start();            
+                System.out.println("Ausdruck ok");
+            } catch (Exception e) {                
+                System.out.println("Ausdruck nicht ok");
+                System.out.println(e);
+            }
+        }
+    }
+PARSER_END(ExprsParse)
+
+SKIP :{" "}
+SKIP :{"\n"|"\r"|"\r\n"}
+TOKEN :{
+    <INT : "int"> 
+    |<IF : "if"> 
+    |<WHILE : "while">
+    |<FINAL : "final">
+    |<NUMBER : ["1"-"9"](["0"-"9"])* | "0">
+    | <IDENT : ["a"-"z"](["a"-"z"] | ["A"-"Z"])*>
+}
+void start() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{String a = null;}
+{        
+    a=programm()<EOF>  {System.out.println(a);}
+}
+
+String programm() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a ="";
+    String b ="";
+}
+{
+    constDecl() a=varDecl() b=statement() {return a+b;}
+}
+
+void constDecl() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{}
+{    
+    ( <FINAL> <INT> constZuw() constList() ";")? 
+}
+
+void constZuw() throws SymbolAlreadyDefinedException, UnknownSymbolException: 
+{   
+    Token a = null;
+    Token b = null;
+    String c = "";
+}
+{
+    a=<IDENT> "=" b=<NUMBER>              
+    {
+        c = st.formatToHex("00", b.image);
+        st.addConstant(a.image.toString(), c);} 
+}
+void constList() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{}
+{
+    ("," constZuw() constList())?
+}
+
+String varDecl() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a ="";
+    String b ="";
+    Token t = null;
+}
+{
+    (<INT> t=<IDENT> a=varZuw(t.image.toString()) b=varList() ";")? 
+    {return a+b;}
+}
+
+
+String varZuw(String s) throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    Token t = null;
+    String a = "";
+    String b = "";
+}
+{
+    ("=" t=<NUMBER>)?    
+    {        
+        if (t == null){
+            a = "1000";
+            b = "00";
+        }else if (Integer.parseInt(t.image) < 256){                        
+            b = st.formatToHex("00", t.image);
+            a = "10" + b;
+        } else{                        
+            b = st.formatToHex("0000", t.image);
+            a = "11" + b;
+        }
+
+        st.addVariable(s, st.formatToHex("00", nextId.toString()), b);
+
+        a += " 36" + st.formatToHex("00", nextId.toString()) + " ";        
+        nextId+= 1;
+        return a;
+    }
+}
+
+String varList() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+    Token t = null;
+}
+{
+    ("," t=<IDENT> a=varZuw(t.image) b=varList())? {return a+b;}
+}
+
+String expression() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    a=term() b=sum() {return a+b;}
+}
+
+String sum() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    ("+" a=term() b=sum() {return a+b + "60 ";}
+    | "-" a=term() b=sum() {return a+b + "64 ";})? 
+    {return a+b;}       
+}
+
+String term() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    a=faktor() b=product() {return a+b;}
+}
+
+String product() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    ("*" a=faktor() b=product() { return a+ "68 " +b;}
+    | "/" a=faktor() b=product() { return a+ "6c "+b;})? 
+    {return a+b;}    
+}
+
+String faktor() throws UnknownSymbolException:
+{
+    String a = "";    
+    Token t1= null;
+    Token t2= null;
+    Pair b = null;
+}
+{
+    t1=<NUMBER> {return "10" + st.formatToHex("00", t1.image) + " ";}
+    | t2=<IDENT> {
+        b = st.getSymbol(t2.image);
+        if(b.first == "CONST"){
+            return "10" + b.second+" ";    
+        } else{
+            return "15" + b.second+" ";
+        }        
+    }
+    | "(" a=expression() ")" {return a;}
+
+}
+
+String statement() throws UnknownSymbolException:
+{
+    String a= "";
+    String b = "";    
+    Token t = null;
+}
+{
+    (t=<IDENT> "=" a=expression() ";" {
+           a+= "36" + st.getSymbol(t.image).second + " ";                  
+        }
+    | "print(" a=expression() ");" {return a+ "b8(print) ";}
+    | "{" a=stmtList() "}"  {return a;})
+    {return a;}
+}
+
+
+
+String stmtList() throws UnknownSymbolException:
+{   
+    String a = "";
+    String b = "";
+}
+{
+    (a=statement() b=stmtList())? {return a+b;}
+}
+
+//String.fromat fromat als string damit 00 besser verarbeitet wird
+//Negative Zahlen beachten (mit vorsicht geniessen), !! hier aufpassen mit String format

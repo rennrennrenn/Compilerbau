@@ -1,4 +1,3 @@
-
 import java.util.HashMap;
 
 public class SymbolTable{
@@ -17,6 +16,5 @@ public class SymbolTable{
             throw new UnknownSymbolException(id);
         }
         return this.symbols.get(id);
-    }           
+    }         
 }
-

@@ -1,0 +1,6 @@
+final int a = 3;
+int b = 2, c;
+{
+    c = a + b;
+    print(c * c * c);
+}

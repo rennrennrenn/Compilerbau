@@ -1,0 +1,365 @@
+options{}
+PARSER_BEGIN(ExprsParse)
+import java.util.ArrayList;
+    public class ExprsParse {        
+        public static SymbolTable st = new SymbolTable();
+        public static Integer nextId = 1;
+        public static Integer jmpId = 0;
+        public static ArrayList<Pair> jmpMarker = new ArrayList<Pair>();
+        public static void main(String args []) {
+            ExprsParse parser = new ExprsParse(System.in);
+           try {
+                parser.start();            
+                System.out.println("Ausdruck ok");
+            } catch (Exception e) {                
+                System.out.println("Ausdruck nicht ok");
+                System.out.println(e);
+            }
+        }
+
+        public static void addToList(String type){
+            Pair<String,String> p = new Pair<String,String>();
+            p.first = type;
+            p.second = "<jmp" + jmpId +">";
+            jmpMarker.add(p);
+            jmpId++;
+        }
+
+        public static String clean(String ds){
+            String s ="";
+            String e = "";
+            int st = -1;
+            int en = -1;
+            while( ds.indexOf("(") != -1 || ds.indexOf("<") != -1 ){
+
+                 st = ds.indexOf("(");
+                if( st != -1){
+                    en = ds.indexOf(")");
+                    s = ds.substring(0,st) + "0000";
+                    e = ds.substring(en+1);                    
+                    ds = s+e;   
+                }
+                st = ds.indexOf("<");
+                if( st != -1){
+                    en = ds.indexOf(">");
+                    s = ds.substring(0,st) + "0000";
+                    e = ds.substring(en+1);                 
+                    ds = s+e;   
+                }
+
+            }
+            return ds;
+        }
+
+        static String formatToHex(String zeros, String content) {
+            int a = Integer.parseInt(content);
+            String b = Integer.toHexString(a);
+            return (zeros + b).substring(b.length());
+        }
+
+        static String formatToNegHex(Integer con){
+            String b = Integer.toBinaryString(con);
+            b = ("00000000000000000000000000000000" + b).substring(b.length());
+            System.out.println(b);
+            b = b.replace("1","X");
+            b = b.replace("0","1");
+            b = b.replace("X","0");
+            Integer ret = binaryToInteger(b);
+            return formatToHex("0000", Integer.toString(ret + 1));
+        }
+
+        static Integer binaryToInteger(String binary){
+            char[] numbers = binary.toCharArray();
+            Integer result = 0;
+            int count = 0;
+            for(int i=numbers.length-1;i>=0;i--){
+                 if(numbers[i]=='1')result+=(int)Math.pow(2, count);
+                 count++;
+            }
+            return result;
+        }
+
+
+        public static String handleJmpMarker(String content){            
+            for(int i = jmpMarker.size() - 1; i >=0; i--){
+                Pair<String,String> p = jmpMarker.get(i);
+                String m = p.second;
+                String tmp = content;
+                int s = tmp.indexOf(m);
+                int e = tmp.lastIndexOf(m);                                
+                tmp = tmp.substring(s+m.length(),e);
+                tmp = tmp.trim();                
+                tmp = clean(tmp);  
+                int t = (tmp.length() /2) + 2;
+                String size = "";
+                if(p.first == "F"){                    
+                    size = formatToHex("0000",Integer.toString(t));                
+                    content = content.substring(0, e) + content.substring(e+m.length());                    
+                } else{
+                    size = formatToNegHex(t);
+                    content = content.substring(0, s) + content.substring(s+m.length());                    
+                }                             
+                content = content.replace(m,size);    
+            }
+
+            return content;
+        }
+    }
+PARSER_END(ExprsParse)
+
+SKIP :{" "}
+SKIP :{"\n"|"\r"|"\r\n"}
+TOKEN :{
+    <INT : "int"> 
+    |<IF : "if"> 
+    |<WHILE : "while">
+    |<FINAL : "final">
+    |<ELSE : "else">
+    |<COMPOP : "=="|"!="|">"|"<"|">="|"<=">
+    
+    |<NUMBER : ["1"-"9"](["0"-"9"])* | "0">
+    | <IDENT : ["a"-"z"](["a"-"z"] | ["A"-"Z"])*>
+}
+void start() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{String a = null;}
+{        
+    a=programm()<EOF>  
+    {
+        a=handleJmpMarker(a);
+        System.out.println(a);
+    }
+}
+
+String programm() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a ="";
+    String b ="";
+}
+{
+    constDecl() a=varDecl() b=statement() {return a+b;}
+}
+
+void constDecl() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{}
+{    
+    ( <FINAL> <INT> constZuw() constList() ";")? 
+}
+
+void constZuw() throws SymbolAlreadyDefinedException, UnknownSymbolException: 
+{   
+    Token a = null;
+    Token b = null;
+    String c = "";
+}
+{
+    a=<IDENT> "=" b=<NUMBER>              
+    {
+        c = formatToHex("00", b.image);
+        st.addConstant(a.image.toString(), c);} 
+}
+void constList() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{}
+{
+    ("," constZuw() constList())?
+}
+
+String varDecl() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a ="";
+    String b ="";
+    Token t = null;
+}
+{
+    (<INT> t=<IDENT> a=varZuw(t.image.toString()) b=varList() ";")? 
+    {return a+b;}
+}
+
+
+String varZuw(String s) throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    Token t = null;
+    String a = "";
+    String b = "";
+}
+{
+    ("=" t=<NUMBER>)?    
+    {        
+        if (t == null){
+            a = "1000";
+            b = "00";
+        }else if (Integer.parseInt(t.image) < 256){                        
+            b = formatToHex("00", t.image);
+            a = "10" + b;
+        } else{                        
+            b = formatToHex("0000", t.image);
+            a = "11" + b;
+        }
+
+        st.addVariable(s, formatToHex("00", nextId.toString()), b);
+
+        a += " 36" + formatToHex("00", nextId.toString()) + " ";        
+        nextId+= 1;
+        return a;
+    }
+}
+
+String varList() throws SymbolAlreadyDefinedException, UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+    Token t = null;
+}
+{
+    ("," t=<IDENT> a=varZuw(t.image) b=varList())? {return a+b;}
+}
+
+String expression() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    a=term() b=sum() {return a+b;}
+}
+
+String sum() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    ("+" a=term() b=sum() {return a+b + "60 ";}
+    | "-" a=term() b=sum() {return a+b + "64 ";})? 
+    {return a+b;}       
+}
+
+String term() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    a=faktor() b=product() {return a+b;}
+}
+
+String product() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+}
+{
+    ("*" a=faktor() b=product() { return a+ "68 " +b;}
+    | "/" a=faktor() b=product() { return a+ "6c "+b;})? 
+    {return a+b;}    
+}
+
+String faktor() throws UnknownSymbolException:
+{
+    String a = "";    
+    Token t1= null;
+    Token t2= null;
+    Pair b = null;
+}
+{
+    t1=<NUMBER> {return "10" + formatToHex("00", t1.image) + " ";}
+    | t2=<IDENT> {
+        b = st.getSymbol(t2.image);
+        if(b.first == "CONST"){
+            return "10" + b.second+" ";    
+        } else{
+            return "15" + b.second+" ";
+        }        
+    }
+    | "(" a=expression() ")" {return a;}
+
+}
+
+String statement() throws UnknownSymbolException:
+{
+    String a= "";
+    String b = "";
+    String c = "";    
+    Token t = null;
+}
+{
+    (t=<IDENT> "=" a=expression() ";" {
+           a+= "36" + st.getSymbol(t.image).second + " ";                  
+        }
+    | "print(" a=expression() ");" {return a+ "b8(print) ";}
+    | "{" a=stmtList() "}"  {return a;}
+    | <IF> a=condition() b=statement() c=optElse()
+    {
+        String marker = "<jmp" + jmpId +"> ";
+        addToList("F");
+        return a + marker + b + marker + c ;        
+    }
+    | <WHILE> a=condition() b=statement()
+    {
+        String m2 = "<jmp" + jmpId +"> ";        
+        addToList("B");
+        String m1 = "<jmp" + jmpId +"> ";        
+        addToList("F");        
+        return m2 +a +m1+ b + "a7 "+m2+m1;
+    }
+    )
+    {return a+b+c;}
+}
+
+String stmtList() throws UnknownSymbolException:
+{   
+    String a = "";
+    String b = "";
+}
+{
+    (a=statement() b=stmtList())? {return a+b;}
+}
+
+String condition() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";
+    String c = "";
+    Token t = null;
+}
+{
+    a=expression() t=<COMPOP> b=expression()
+    {
+        switch(t.image){
+            case "==":
+                c = "a0 ";
+                break;
+            case "!=":
+                c = "9f ";
+                break;
+            case ">=":
+                c = "a1 ";
+                break;
+            case "<=":
+                c = "a3 ";
+                break;
+            case "<":
+                c = "a2 ";
+                break;
+            case ">":
+                c = "a4 ";
+                break;
+        }        
+        return a+b+c;
+    }
+}
+
+String optElse() throws UnknownSymbolException:
+{
+    String a = "";
+    String b = "";    
+}
+{
+    (<ELSE> a=statement() 
+    {
+        String c = "<jmp" + jmpId + "> ";
+        addToList("F");
+        b = "a7 " + c;         
+        return b+ a+c;
+    }
+    )?
+}

@@ -23,6 +23,7 @@ TOKEN :{
     |<IF : "if"> 
     |<WHILE : "while">
     |<FINAL : "final">
+    |<COMPOP : ["=="|"!="|">"|"<"|">="|"<="]>
     |<NUMBER : ["1"-"9"](["0"-"9"])* | "0">
     | <IDENT : ["a"-"z"](["a"-"z"] | ["A"-"Z"])*>
 }
@@ -187,7 +188,9 @@ String statement() throws UnknownSymbolException:
            a+= "36" + st.getSymbol(t.image).second + " ";                  
         }
     | "print(" a=expression() ");" {return a+ "b8(print) ";}
-    | "{" a=stmtList() "}"  {return a;})
+    | "{" a=stmtList() "}"  {return a;}
+    | <IF> condition() statement() optElse()
+    | <WHILE> condition() statement() )
     {return a;}
 }
 
@@ -200,6 +203,19 @@ String stmtList() throws UnknownSymbolException:
 }
 {
     (a=statement() b=stmtList())? {return a+b;}
+}
+
+String condition():
+{}
+{
+    expression() <COMPOP> expression()
+}
+
+
+void optElse():
+{}
+{
+    ("else" statement())?
 }
 
 //String.fromat fromat als string damit 00 besser verarbeitet wird

@@ -33,5 +33,11 @@ public class SymbolTable{
         }
         Pair<String, String> a = this.symbols.get(id);        
         return a;
-    }           
+    }       
+    
+    String formatToHex(String zeros, String content) {
+        int a = Integer.parseInt(content);
+        String b = Integer.toHexString(a);
+        return (zeros + b).substring(b.length());
+    }
 }

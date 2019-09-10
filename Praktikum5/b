@@ -1,0 +1,8 @@
+adr(b): LOD1
+	LOD2
+	ADD
+	STO 3
+	LOD 3
+	CALL(adr(a),0,30)
+	ADD
+	RET

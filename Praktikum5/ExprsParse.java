@@ -29,9 +29,10 @@ import java.util.ArrayList;
             String e = "";
             int st = -1;
             int en = -1;
+            ArrayList<String> eds = new ArrayList<String>();
             while( ds.indexOf("(") != -1 || ds.indexOf("<") != -1 ){
 
-                 st = ds.indexOf("(");
+                st = ds.indexOf("(");
                 if( st != -1){
                     en = ds.indexOf(")");
                     s = ds.substring(0,st) + "0000";
@@ -41,9 +42,16 @@ import java.util.ArrayList;
                 st = ds.indexOf("<");
                 if( st != -1){
                     en = ds.indexOf(">");
-                    s = ds.substring(0,st) + "0000";
+                    String test = ds.substring(st,en);
+                    s = ds.substring(0,st);
                     e = ds.substring(en+1);
-                    ds = s+e;
+                    if(!eds.contains(test)){
+                        ds = s+ "0000" + e;
+                        eds.add(test);
+                    } else {
+                        ds = s+ e;
+                    }
+
                 }
 
             }
@@ -58,8 +66,7 @@ import java.util.ArrayList;
 
         static String formatToNegHex(Integer con){
             String b = Integer.toBinaryString(con);
-            b = ("00000000000000000000000000000000" + b).substring(b.length());
-            System.out.println(b);
+            b = ("0000000000000000" + b).substring(b.length());
             b = b.replace("1","X");
             b = b.replace("0","1");
             b = b.replace("X","0");
@@ -80,6 +87,7 @@ import java.util.ArrayList;
 
 
         public static String handleJmpMarker(String content){
+            System.out.println(content);
             for(int i = jmpMarker.size() - 1; i >=0; i--){
                 Pair<String,String> p = jmpMarker.get(i);
                 String m = p.second;
@@ -89,13 +97,16 @@ import java.util.ArrayList;
                 tmp = tmp.substring(s+m.length(),e);
                 tmp = tmp.trim();
                 tmp = clean(tmp);
+                System.out.println(tmp.replace(" ",""));
+                tmp = tmp.replace(" ","");
                 int t = (tmp.length() /2) + 2;
+                System.out.println(t);
                 String size = "";
                 if(p.first == "F"){
-                    size = formatToHex("0000",Integer.toString(t));
+                    size = formatToHex("0000",Integer.toString(t+1));
                     content = content.substring(0, e) + content.substring(e+m.length());
                 } else{
-                    size = formatToNegHex(t);
+                    size = formatToNegHex(t + 4);
                     content = content.substring(0, s) + content.substring(s+m.length());
                 }
                 content = content.replace(m,size);
@@ -109,7 +120,7 @@ import java.util.ArrayList;
     a = programm();
     jj_consume_token(0);
         a=handleJmpMarker(a);
-        System.out.println(a);
+        System.out.println(a + "b1");
   }
 
   static final public String programm() throws ParseException, SymbolAlreadyDefinedException, UnknownSymbolException {
@@ -470,6 +481,7 @@ import java.util.ArrayList;
       jj_la1[12] = jj_gen;
       ;
     }
+     {if (true) return a+b;}
     throw new Error("Missing return statement in function");
   }
 

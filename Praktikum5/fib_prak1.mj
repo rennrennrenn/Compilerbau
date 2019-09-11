@@ -1,0 +1,19 @@
+final int n = 6;
+int a = 0, aa = 0, b = 1, i = 2;
+{
+    if n == 0
+        print(0);
+    if n == 1
+        print(1);
+    if n > 1
+    {
+        while  i <= n
+        {
+            aa = a + b;
+            a = b;
+            b = aa;
+            i = i + 1;
+        }
+        print(b);
+    }
+}
